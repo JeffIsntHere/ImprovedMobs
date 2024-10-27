@@ -150,7 +150,7 @@ public class Utils {
 
     public static float getBreakSpeed(Mob entity, ItemStack stack, BlockState state) {
         float f = stack.getDestroySpeed(state);
-        if (f > 1.0f) {
+        if (f > 1.0f && entity.getAttributes().hasAttribute(Attributes.MINING_EFFICIENCY)) {
             f += (float) entity.getAttributeValue(Attributes.MINING_EFFICIENCY);
         }
         if (MobEffectUtil.hasDigSpeed(entity))

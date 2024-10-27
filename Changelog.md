@@ -1,3 +1,7 @@
+Improved Mobs 1.13.1
+================
+- Fix crash with mining speed attribute for block breaking
+
 Improved Mobs 1.13.0
 ================
 - Port to 1.21.1
