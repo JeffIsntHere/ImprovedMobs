@@ -163,7 +163,7 @@ public class Utils {
                 default -> f *= 8.1E-4F;
             }
         }
-        if (entity.isEyeInFluid(FluidTags.WATER)) {
+        if (entity.isEyeInFluid(FluidTags.WATER) && entity.getAttribute(Attributes.SUBMERGED_MINING_SPEED) != null) {
             f *= (float) entity.getAttribute(Attributes.SUBMERGED_MINING_SPEED).getValue();
         }
         if (!entity.onGround())
