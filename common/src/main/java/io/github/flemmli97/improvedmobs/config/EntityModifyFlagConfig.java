@@ -89,6 +89,7 @@ public class EntityModifyFlagConfig implements IConfigListValue<EntityModifyFlag
             }
             this.map.put(subs[0].trim(), set);
         }
+        this.resolved = false;
         return this;
     }
 
