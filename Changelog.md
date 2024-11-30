@@ -1,4 +1,4 @@
-Improved Mobs 1.13.1
+Improved Mobs 1.13.2
 ================
 - Fix some problems with list config on forge causing config resets
 - Fix projectile/explosion damage increase not applying to player on fabric
