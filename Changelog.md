@@ -1,3 +1,10 @@
+Improved Mobs 1.13.1
+================
+- Fix some problems with list config on forge causing config resets
+- Fix projectile/explosion damage increase not applying to player on fabric
+- Fix Flag config not updating correctly after config modification with tags
+- Fix crash with epic fight
+
 Improved Mobs 1.13
 ================
 - Redo integration mod for difficulty:
