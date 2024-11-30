@@ -66,7 +66,7 @@ public class ImprovedMobsForge {
     }
 
     static void registerPackets(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar(ImprovedMobs.MODID);
+        PayloadRegistrar registrar = event.registrar(ImprovedMobs.MODID).optional();
         registrar.playToClient(S2CDiffcultyValue.TYPE, S2CDiffcultyValue.STREAM_CODEC, ImprovedMobsForge::difficultyHandlerPacket);
         registrar.playToClient(S2CShowDifficulty.TYPE, S2CShowDifficulty.STREAM_CODEC, ImprovedMobsForge::handleConfig);
     }
