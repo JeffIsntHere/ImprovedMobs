@@ -180,7 +180,7 @@ public class ConfigSpecs {
             builder.pop();
 
             builder.comment("Black/Whitelist for various stuff").push("list");
-            this.entityBlacklist = builder.comment(EntityModifyFlagConfig.use()).define("Entity Configs", Lists.newArrayList("UNINITIALIZED"));
+            this.entityBlacklist = builder.comment(EntityModifyFlagConfig.use()).define("Entity Configs", Lists.newArrayList("UNINITIALIZED"), stringList());
             this.flagBlacklist = builder.comment("Any of the following ", EntityModifyFlagConfig.Flags.toggable().toString(), "added here will disable that feature completely.", "E.g. [\"GUARDIAN\"] will disable the guardian feature").define("Flag Blacklist", Config.CommonConfig.flagBlacklist, stringList());
             this.mobAttributeWhitelist = builder.comment("Treat ATTRIBUTES flags as whitelist").define("Attribute Whitelist", Config.CommonConfig.mobAttributeWhitelist);
             this.armorMobWhitelist = builder.comment("Treat ARMOR flags as whitelist").define("Armor Equip Whitelist", Config.CommonConfig.armorMobWhitelist);
@@ -236,9 +236,9 @@ public class ConfigSpecs {
             builder.pop();
 
             builder.comment("Configs regarding mobs spawning with equipment").push("equipment");
-            this.equipmentModBlacklist = builder.comment("Blacklist items from whole mods. Add modid to prevent items from that mod being equipped. (For individual items use the equipment.json)").define("Item Blacklist", Config.CommonConfig.equipmentModBlacklist);
+            this.equipmentModBlacklist = builder.comment("Blacklist items from whole mods. Add modid to prevent items from that mod being equipped. (For individual items use the equipment.json)").define("Item Blacklist", Config.CommonConfig.equipmentModBlacklist, stringList());
             this.equipmentModWhitelist = builder.comment("Use blacklist as whitelist").define("Item Whitelist", Config.CommonConfig.equipmentModWhitelist);
-            this.itemuseBlacklist = builder.comment("Blacklist for items mobs should never be able to use.", "Use as in using the item similar to players (e.g. shooting bows)").define("Item Use Blacklist", Config.CommonConfig.itemuseBlacklist);
+            this.itemuseBlacklist = builder.comment("Blacklist for items mobs should never be able to use.", "Use as in using the item similar to players (e.g. shooting bows)").define("Item Use Blacklist", Config.CommonConfig.itemuseBlacklist, stringList());
             this.itemuseWhitelist = builder.comment("Turn the use blacklist into a whitelist").define("Item Use Whitelist", Config.CommonConfig.itemuseWhitelist);
             this.entityItemConfig = builder.comment("Blacklist for specific mobs and items they shouldnt use (e.g. skeletons already use bows)", EntityItemConfig.use()).define("Entity Item Use Blacklist", Config.CommonConfig.entityItemConfig.writeToString(), stringList());
             this.baseEquipChance = builder.comment("Base chance that a mob can have one piece of armor").defineInRange("Equipment Chance", Config.CommonConfig.baseEquipChance, 0, 1);
