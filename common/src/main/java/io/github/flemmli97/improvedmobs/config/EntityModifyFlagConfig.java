@@ -87,6 +87,7 @@ public class EntityModifyFlagConfig {
             }
             this.map.put(subs[0].trim(), set);
         }
+        this.resolved = false;
         return this;
     }
 
