@@ -10,6 +10,7 @@ import io.github.flemmli97.improvedmobs.ai.WaterRidingGoal;
 import io.github.flemmli97.improvedmobs.config.Config;
 import io.github.flemmli97.improvedmobs.config.EntityModifyFlagConfig;
 import io.github.flemmli97.improvedmobs.difficulty.DifficultyData;
+import io.github.flemmli97.improvedmobs.entities.RiddenSummonEntity;
 import io.github.flemmli97.improvedmobs.mixin.MobEntityMixin;
 import io.github.flemmli97.improvedmobs.mixin.NearestTargetGoalMixin;
 import io.github.flemmli97.improvedmobs.mixin.TargetGoalAccessor;
@@ -103,7 +104,7 @@ public class EventCalls {
     }
 
     public static void onEntityLoad(Mob mob) {
-        if (mob.level().isClientSide)
+        if (mob.level().isClientSide || mob instanceof RiddenSummonEntity)
             return;
         if (((ISpawnReason) mob).getSpawnReason() == MobSpawnType.SPAWNER && Config.CommonConfig.ignoreSpawner)
             return;

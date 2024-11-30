@@ -2,6 +2,7 @@ package io.github.flemmli97.improvedmobs.ai;
 
 import io.github.flemmli97.improvedmobs.ImprovedMobs;
 import io.github.flemmli97.improvedmobs.entities.AquaticSummonEntity;
+import io.github.flemmli97.improvedmobs.entities.RiddenSummonEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
@@ -58,7 +59,8 @@ public class WaterRidingGoal extends Goal {
 
     @Override
     public void stop() {
-        this.living.stopRiding();
+        if (this.living.getVehicle() instanceof RiddenSummonEntity mount)
+            mount.scheduledDismount();
         this.wait = 0;
     }
 
@@ -71,20 +73,18 @@ public class WaterRidingGoal extends Goal {
     public void tick() {
         if (this.start) {
             if (!this.living.isPassenger()) {
-                AquaticSummonEntity boat = new AquaticSummonEntity(this.living.level());
+                AquaticSummonEntity summon = new AquaticSummonEntity(this.living.level());
                 BlockPos pos = this.living.blockPosition();
-                boat.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, this.living.getYRot(), this.living.getXRot());
-                if (this.living.level().noCollision(boat)) {
-                    //((MobEntityMixin) boat).setDeathLootTable(EMPTY);
-                    //EntityFlags.get(boat).rideSummon = true;
-                    this.living.level().addFreshEntity(boat);
-                    this.living.startRiding(boat);
+                summon.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, this.living.getYRot(), this.living.getXRot());
+                if (this.living.level().noCollision(summon)) {
+                    this.living.level().addFreshEntity(summon);
+                    summon.scheduledRide(this.living);
                 }
             }
             this.start = false;
         }
         Entity entity = this.living.getVehicle();
-        if (!(entity instanceof AquaticSummonEntity mount) || !entity.isAlive())
+        if (!(entity instanceof AquaticSummonEntity mount) || !mount.isAlive())
             return;
         this.living.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 10, 1, false, false));
         if (this.nearShore(entity, 0)) {
@@ -100,16 +100,16 @@ public class WaterRidingGoal extends Goal {
         if (this.isOnLand(entity)) {
             this.living.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 2, 5, false, false));
             this.living.getNavigation().stop();
-            this.living.stopRiding();
+            mount.scheduledDismount();
         }
     }
 
     private boolean isOnLand(Entity riding) {
         BlockState state = riding.level().getBlockState(riding.blockPosition());
-        if (state.getFluidState().is(FluidTags.WATER) && state.liquid()) {
-            return riding.level().getBlockState(riding.blockPosition().below()).isSolid();
+        if (state.getFluidState().is(FluidTags.WATER) || state.liquid()) {
+            return !riding.isUnderWater() && riding.level().getBlockState(riding.blockPosition().below()).isSolid();
         }
-        return false;
+        return riding.level().getBlockState(riding.blockPosition().below()).isSolid();
     }
 
     private boolean nearShore(Entity riding, int cliffSize) {
