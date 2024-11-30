@@ -5,8 +5,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.pathfinder.AmphibiousNodeEvaluator;
 import net.minecraft.world.level.pathfinder.PathFinder;
-import net.minecraft.world.level.pathfinder.SwimNodeEvaluator;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -18,13 +18,13 @@ public class WaterNavigation extends GroundPathNavigation {
 
     @Override
     protected PathFinder createPathFinder(int maxVisitedNodes) {
-        this.nodeEvaluator = new SwimNodeEvaluator(true);
+        this.nodeEvaluator = new AmphibiousNodeEvaluator(true);
         return new PathFinder(this.nodeEvaluator, maxVisitedNodes);
     }
 
     @Override
     protected boolean canUpdatePath() {
-        return this.isInLiquid();
+        return true;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class WaterNavigation extends GroundPathNavigation {
 
     @Override
     public boolean isStableDestination(BlockPos pos) {
-        return !this.level.getBlockState(pos).isSolidRender(this.level, pos);
+        return true;
     }
 
     @Override

@@ -121,6 +121,8 @@ public class FlyRidingGoal extends Goal {
     }
 
     private boolean checkFlying() {
+        if (this.living.isUnderWater())
+            return false;
         //Check if entity tries to move somewhere already
         if (Math.abs(this.living.xxa) > 0.005 || Math.abs(this.living.zza) > 0.005)
             return false;

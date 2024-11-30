@@ -105,18 +105,17 @@ public class WaterRidingGoal extends Goal {
     }
 
     private boolean isOnLand(Entity riding) {
-        BlockState state = riding.level().getBlockState(riding.blockPosition());
-        if (state.getFluidState().is(FluidTags.WATER) || state.liquid()) {
-            return !riding.isUnderWater() && riding.level().getBlockState(riding.blockPosition().below()).isSolid();
+        if (!riding.isInWater()) {
+            return riding.level().getBlockState(riding.blockPosition().below()).isSolid();
         }
-        return riding.level().getBlockState(riding.blockPosition().below()).isSolid();
+        return false;
     }
 
     private boolean nearShore(Entity riding, int cliffSize) {
         if (cliffSize < 3) {
             BlockPos pos = riding.blockPosition().relative(riding.getDirection()).above(cliffSize);
             BlockState state = riding.level().getBlockState(pos);
-            if (state.isSolid() && !state.blocksMotion())
+            if (state.blocksMotion() && !riding.level().getBlockState(pos.above()).blocksMotion())
                 return true;
             else
                 return this.nearShore(riding, cliffSize + 1);
