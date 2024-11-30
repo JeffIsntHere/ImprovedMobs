@@ -1,3 +1,13 @@
+Improved Mobs 1.13.2
+================
+- Fix some problems with list config on forge causing config resets
+- Fix projectile/explosion damage increase not applying to player on fabric
+- Fix Flag config not updating correctly after config modification with tags
+- Fix crash with epic fight
+- Fix some stuff with flying and water mounts
+- Fix crash with underwater block breaking
+- Fix packets not being optional
+
 Improved Mobs 1.13.1
 ================
 - Fix crash with mining speed attribute for block breaking
