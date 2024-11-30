@@ -33,12 +33,22 @@ import org.jetbrains.annotations.Nullable;
 public abstract class RiddenSummonEntity extends Mob {
 
     private boolean clearedAI;
+    private Entity scheduledRide;
+    private boolean scheduledDismount;
 
     public RiddenSummonEntity(EntityType<? extends Mob> entityType, Level level) {
         super(entityType, level);
         if (!level.isClientSide) {
             this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(5);
         }
+    }
+
+    public void scheduledRide(Entity passenger) {
+        this.scheduledRide = passenger;
+    }
+
+    public void scheduledDismount() {
+        this.scheduledDismount = true;
     }
 
     @Nullable
@@ -141,15 +151,25 @@ public abstract class RiddenSummonEntity extends Mob {
     }
 
     @Override
-    public void aiStep() {
-        super.aiStep();
-        if (!this.clearedAI) {
-            this.clearedAI = true;
-            this.goalSelector.getRunningGoals().forEach(WrappedGoal::stop);
-            this.removeFreeWill();
+    public void tick() {
+        super.tick();
+        if (!this.level.isClientSide) {
+            if (!this.clearedAI) {
+                this.clearedAI = true;
+                this.goalSelector.getRunningGoals().forEach(WrappedGoal::stop);
+                this.removeFreeWill();
+            }
+            if (this.scheduledRide != null) {
+                this.scheduledRide.startRiding(this);
+                this.scheduledRide = null;
+            }
+            if (this.scheduledDismount && this.getFirstPassenger() != null) {
+                this.getFirstPassenger().stopRiding();
+                this.scheduledDismount = false;
+            }
+            if (!this.isVehicle())
+                this.remove(RemovalReason.KILLED);
         }
-        if (!this.isVehicle())
-            this.remove(RemovalReason.KILLED);
     }
 
     @Override

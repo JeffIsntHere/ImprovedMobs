@@ -1,6 +1,7 @@
 package io.github.flemmli97.improvedmobs.ai;
 
 import io.github.flemmli97.improvedmobs.entities.FlyingSummonEntity;
+import io.github.flemmli97.improvedmobs.entities.RiddenSummonEntity;
 import io.github.flemmli97.improvedmobs.mixin.MobEntityMixin;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -85,7 +86,8 @@ public class FlyRidingGoal extends Goal {
 
     @Override
     public void stop() {
-        this.living.stopRiding();
+        if (this.living.getVehicle() instanceof RiddenSummonEntity mount)
+            mount.scheduledDismount();
         this.living.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 200, 1));
         this.idle = 0;
         this.targetDelay = 0;
@@ -100,22 +102,22 @@ public class FlyRidingGoal extends Goal {
     public void tick() {
         if (this.start) {
             if (!this.living.isPassenger()) {
-                FlyingSummonEntity boat = new FlyingSummonEntity(this.living.level);
+                FlyingSummonEntity summon = new FlyingSummonEntity(this.living.level);
                 BlockPos pos = this.living.blockPosition();
-                boat.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, this.living.getYRot(), this.living.getXRot());
-                if (boat.doesntCollideWithRidden(this.living)) {
-                    this.living.level.addFreshEntity(boat);
-                    this.living.startRiding(boat);
+                summon.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, this.living.getYRot(), this.living.getXRot());
+                if (summon.doesntCollideWithRidden(this.living)) {
+                    this.living.level.addFreshEntity(summon);
+                    summon.scheduledRide(this.living);
                     this.flyDelay = 0;
                 }
             }
             this.start = false;
         }
         Entity entity = this.living.getVehicle();
-        if (!(entity instanceof FlyingSummonEntity) || !entity.isAlive())
+        if (!(entity instanceof FlyingSummonEntity summon) || !summon.isAlive())
             return;
         if (++this.flyDelay >= 40 && this.isOnLand(entity))
-            this.living.stopRiding();
+            summon.scheduledDismount();
     }
 
     private boolean checkFlying() {
