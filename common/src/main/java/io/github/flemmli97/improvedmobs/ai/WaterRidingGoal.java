@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
 
@@ -104,7 +105,7 @@ public class WaterRidingGoal extends Goal {
     }
 
     private boolean isOnLand(Entity riding) {
-        if (riding.level.getBlockState(riding.blockPosition()).getMaterial() != Material.WATER) {
+        if (!riding.isInWater()) {
             return riding.level.getBlockState(riding.blockPosition().below()).getMaterial().isSolid();
         }
         return false;
@@ -113,7 +114,8 @@ public class WaterRidingGoal extends Goal {
     private boolean nearShore(Entity riding, int cliffSize) {
         if (cliffSize < 3) {
             BlockPos pos = riding.blockPosition().relative(riding.getDirection()).above(cliffSize);
-            if (riding.level.getBlockState(pos).getMaterial().isSolid() && !riding.level.getBlockState(pos.above()).getMaterial().blocksMotion())
+            BlockState state = riding.level.getBlockState(pos);
+            if (state.getMaterial().blocksMotion() && !riding.level.getBlockState(pos.above()).getMaterial().blocksMotion())
                 return true;
             else
                 return this.nearShore(riding, cliffSize + 1);
