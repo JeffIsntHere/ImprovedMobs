@@ -1,5 +1,4 @@
-apply from: "https://raw.githubusercontent.com/Flemmli97/GradleScripts/mc-architectury-fabric-neoforge/neoforge.gradle"
-
+apply from: 'C:\\Users\\jeffe\\Programming Related\\ImprovedMobs\\GradleScriptApplyFrom'
 loom {
     runs {
         data {

@@ -1,5 +1,6 @@
 package io.github.flemmli97.improvedmobs.forge.events;
 
+import io.github.flemmli97.improvedmobs.ImprovedMobs;
 import io.github.flemmli97.improvedmobs.commands.IMCommand;
 import io.github.flemmli97.improvedmobs.events.EventCalls;
 import io.github.flemmli97.improvedmobs.forge.config.ConfigLoader;
@@ -17,6 +18,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.ExplosionEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import org.apache.logging.log4j.LogManager;
 
 public class EventHandler {
 

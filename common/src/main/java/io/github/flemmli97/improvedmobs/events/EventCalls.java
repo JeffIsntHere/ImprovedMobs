@@ -46,8 +46,8 @@ import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.*;
+import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -105,9 +105,17 @@ public class EventCalls {
 
     public static void onEntityLoad(Mob mob) {
         if (mob.level().isClientSide || mob instanceof RiddenSummonEntity)
+        {
             return;
+        }
         if (((ISpawnReason) mob).getSpawnReason() == MobSpawnType.SPAWNER && Config.CommonConfig.ignoreSpawner)
+        {
             return;
+        }
+        if(!(mob instanceof Zombie) && !(mob instanceof AbstractSkeleton) && !(mob instanceof AbstractPiglin) && !(mob instanceof AbstractIllager))
+        {
+            return;
+        }
         EntityFlags flags = EntityFlags.get(mob);
         boolean mobGriefing = mob.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
         float difficulty = DifficultyData.getDifficulty(mob.level(), mob);

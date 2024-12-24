@@ -1,0 +1,179 @@
+ext {
+    shadow_dep = [group: "com.github.johnrengelman", name: "shadow", version: "8.+"]
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.matthewprenger:CurseGradle:1.4.0"
+        classpath project.hasProperty('shadow_dep') ? shadow_dep : ["group": "com.github.johnrengelman", "name": "shadow", "version": "8.+"]
+        classpath "com.modrinth.minotaur:Minotaur:2.+"
+    }
+}
+
+apply plugin: com.modrinth.minotaur.Minotaur
+apply plugin: com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+apply plugin: com.matthewprenger.cursegradle.CurseGradlePlugin
+apply from: "https://raw.githubusercontent.com/Flemmli97/GradleScripts/mc-architectury-fabric-neoforge/changelog.gradle"
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+loom {
+    runs {
+        client {
+            vmArgs "-Dmixin.debug.export=true"
+        }
+    }
+}
+
+ext {
+    mod_meta = ["version": project.version, "loader_version": neo_loader_version, "homepage": curse_page_forge,
+                "mcversion": minecraft_version, "forge_version": neoforge_version]
+}
+
+configurations {
+    common
+    shadowCommon // Don't use shadow from the shadow plugin because we don't want IDEA to index this.
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+}
+
+repositories {
+    maven { url "https://maven.neoforged.net/releases/" }
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${neoforge_version}"
+
+    common(project(path: ":common", configuration: "namedElements")) { transitive false }
+    shadowCommon(project(path: ":common", configuration: "transformProductionNeoForge")) { transitive = false }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    def loader_version = (neoforge_version =~ /([0-9]+)\.([0-9]+)\.([0-9]+)/)[0][1]
+    filesMatching("META-INF/neoforge.mods.toml") {
+        expand mod_meta
+    }
+    exclude '.cache'
+}
+
+shadowJar {
+    exclude "fabric.mod.json"
+
+    configurations = [project.configurations.shadowCommon]
+    archiveClassifier.set("dev-shadow")
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+    dependsOn shadowJar
+    archiveClassifier.set("neoforge")
+}
+
+jar {
+    archiveClassifier.set("dev")
+}
+
+sourcesJar {
+    def commonSources = project(":common").sourcesJar
+    dependsOn commonSources
+    from commonSources.archiveFile.map { zipTree(it) }
+    archiveClassifier.set("neoforge-sources")
+}
+
+components.java {
+    withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+        skip()
+    }
+}
+
+curseforge {
+    apiKey = findProperty('curseApiToken') ?: '0'
+
+    project {
+        id = "${curse_id_forge}"
+        "${project.curse_versions}".split(', ').each {
+            addGameVersion "${it}"
+        }
+        addGameVersion "NeoForge"
+        mainArtifact(remapJar) {
+            def txt = project.ext.changelog(1).replace("\n-", "\n\n- ")
+            txt = txt + "\n\n" + "For past versions see: ${project.full_changelog}"
+            changelog = txt
+            changelogType = "markdown"
+            releaseType = 'release'
+        }
+        if (!"${project.curse_dep_forge}".isEmpty() || project.hasProperty("optional_curse_dep_forge")) {
+            relations {
+                if (!"${project.curse_dep_forge}".isEmpty()) {
+                    "${project.curse_dep_forge}".split(', ').each {
+                        requiredDependency "${it}"
+                    }
+                }
+                if (project.hasProperty("optional_curse_dep_forge")) {
+                    "${project.optional_curse_dep_forge}".split(', ').each {
+                        optionalDependency "${it}"
+                    }
+                }
+            }
+        }
+    }
+}
+tasks.getByName("curseforge").mustRunAfter build
+
+modrinth {
+    token = findProperty('modrinthApiToken') ?: ""
+    projectId = "${modrinth_id}"
+    versionNumber = version
+    versionName = remapJar.archiveFileName
+    changelog = project.ext.changelog(1) + "\n\n" + "For past versions see: ${project.full_changelog}"
+    versionType = "release"
+    uploadFile = remapJar
+    gameVersions = "${project.modrinth_versions}".split(', ').toList()
+    loaders = ["neoforge"]
+    dependencies {
+        if (!"${project.modrinth_dep_forge}".isEmpty()) {
+            "${project.modrinth_dep_forge}".split(', ').each {
+                required.project "${it}"
+            }
+        }
+    }
+}
+
+tasks.getByName("modrinth").mustRunAfter build
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact(remapJar) {
+                classifier null
+                builtBy remapJar
+            }
+            artifact(sourcesJar) {
+                classifier "sources"
+                builtBy remapSourcesJar
+            }
+            artifactId project.archives_base_name
+            version project.version + "-neoforge"
+        }
+    }
+
+    repositories {
+        maven {
+            url "https://gitlab.com/api/v4/projects/21830712/packages/maven"
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GPR_USER")
+                password = project.findProperty("gpr.gitlab.token") ?: System.getenv("GPR_GITLAB_TOKEN")
+            }
+        }
+    }
+}
