@@ -1,17 +1,29 @@
 package io.github.flemmli97.improvedmobs.mixin;
 
+import io.github.flemmli97.improvedmobs.ImprovedMobs;
 import io.github.flemmli97.improvedmobs.mixinhelper.ITNTThrowable;
 import io.github.flemmli97.improvedmobs.utils.EntityFlags;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.PrimedTnt;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.CryingObsidianBlock;
+import net.minecraft.world.level.block.EnderChestBlock;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Optional;
 
 @Mixin(PrimedTnt.class)
 public abstract class TNTEntityMixin extends Entity implements ITNTThrowable {
@@ -27,7 +39,33 @@ public abstract class TNTEntityMixin extends Entity implements ITNTThrowable {
             info.cancel();
             tnt.remove(RemovalReason.KILLED);
             if (!tnt.level().isClientSide)
-                tnt.level().explode(tnt, tnt.getX(), tnt.getY(0.0625D), tnt.getZ(), 4.0F, Level.ExplosionInteraction.NONE);
+                tnt.level().explode(tnt, Explosion.getDefaultDamageSource(tnt.level(), tnt),
+                        new ExplosionDamageCalculator() {
+                            @Override
+                            public Optional<Float> getBlockExplosionResistance(Explosion explosion, BlockGetter reader, BlockPos pos, BlockState state, FluidState fluid) {
+                                if(state.isAir() || state.getBlock() instanceof LiquidBlock)
+                                {
+                                    return Optional.empty();
+                                }
+                                final float explosionResistance = state.getBlock().getExplosionResistance();
+                                final float waterExplosionResistance = 100.0f;
+                                final float grassBlockExplosionResistance = 0.6f;
+                                if(explosionResistance > waterExplosionResistance)
+                                {
+                                    return Optional.of(state.getBlock().getExplosionResistance());
+                                }
+                                return Optional.of(grassBlockExplosionResistance);
+                            }
+                            @Override
+                            public float getEntityDamageAmount(Explosion explosion, Entity entity) {
+                                final float f = 6.0F;
+                                Vec3 vec3 = explosion.center();
+                                double d = Math.sqrt(entity.distanceToSqr(vec3)) / (double)f;
+                                double e = (1.0 - d) * (double)Explosion.getSeenPercent(vec3, entity);
+                                return (float)((e * e + e) / 2.0 * 7.0 * (double)f + 1.0);
+                            }
+                        }
+                , tnt.getX(), tnt.getY(0.0625D), tnt.getZ(), 1.5F, false, Level.ExplosionInteraction.TNT);
         }
     }
 

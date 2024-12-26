@@ -54,6 +54,7 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.Snowball;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
@@ -258,10 +259,17 @@ public class EventCalls {
     }
 
     public static float hurtEvent(LivingEntity entity, DamageSource source, float dmg) {
-        if (source.is(DamageTypeTags.IS_PROJECTILE) && source.getEntity() instanceof Monster)
-            return dmg * (EntityFlags.get(source.getEntity()).projMult);
-        if (source.is(DamageTypeTags.IS_EXPLOSION) && source.getEntity() instanceof Monster)
-            return dmg * (EntityFlags.get(source.getEntity()).explosionMult);
+        if(source.getEntity() instanceof Monster)
+        {
+            if(source.is(DamageTypeTags.IS_PROJECTILE))
+            {
+                return dmg * (EntityFlags.get(source.getEntity()).projMult);
+            }
+            else if(source.is(DamageTypeTags.IS_EXPLOSION))
+            {
+                return dmg * (EntityFlags.get(source.getEntity()).explosionMult);
+            }
+        }
         if (entity instanceof Monster) {
             if (source.is(DamageTypeTags.WITCH_RESISTANT_TO))
                 return dmg * (1 - EntityFlags.get(entity).magicRes);
@@ -362,10 +370,12 @@ public class EventCalls {
     public static void explosion(Explosion explosion, Entity source, List<Entity> affectedEntities) {
         if (source instanceof PrimedTnt && EntityFlags.get(source).isThrownEntity) {
             if (!Config.CommonConfig.tntBlockDestruction)
+            {
                 explosion.getToBlow().clear();
+            }
             LivingEntity igniter = explosion.getIndirectSourceEntity();
             if (igniter instanceof Mob) {
-                affectedEntities.removeIf(e -> !e.equals(((Mob) igniter).getTarget()));
+                affectedEntities.removeIf(e -> ((e instanceof Monster || e instanceof ItemEntity) && !e.equals(((Mob) igniter).getTarget())));
             }
         }
     }
