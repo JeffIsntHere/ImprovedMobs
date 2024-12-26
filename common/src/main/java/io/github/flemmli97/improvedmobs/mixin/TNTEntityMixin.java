@@ -58,11 +58,7 @@ public abstract class TNTEntityMixin extends Entity implements ITNTThrowable {
                             }
                             @Override
                             public float getEntityDamageAmount(Explosion explosion, Entity entity) {
-                                final float f = 6.0F;
-                                Vec3 vec3 = explosion.center();
-                                double d = Math.sqrt(entity.distanceToSqr(vec3)) / (double)f;
-                                double e = (1.0 - d) * (double)Explosion.getSeenPercent(vec3, entity);
-                                return (float)((e * e + e) / 2.0 * 7.0 * (double)f + 1.0);
+                                return 16.0f;
                             }
                         }
                 , tnt.getX(), tnt.getY(0.0625D), tnt.getZ(), 1.5F, false, Level.ExplosionInteraction.TNT);
